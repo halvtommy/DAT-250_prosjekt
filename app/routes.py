@@ -1,10 +1,10 @@
-from fileinput import filename
 import logging
 from flask import render_template, flash, redirect, url_for, request
 from app import app, query_db
 from app.forms import IndexForm, PostForm, FriendsForm, ProfileForm, CommentsForm
 from datetime import datetime
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # this file contains all the different routes, and the logic for communicating with the database
 
@@ -21,15 +21,16 @@ def index():
         if user == None:
             flash('Sorry, wrong password or username!')
             app.logger.warning('Failed login attemt with username %s', form.login.username.data)
-        elif user['password'] == form.login.password.data:
+        elif check_password_hash(user['password'], form.login.password.data):
             return redirect(url_for('stream', username=form.login.username.data))
         else:
             flash('Sorry, wrong password or username!')
             app.logger.warning('Failed login attemt from %s', form.login.username.data)
 
     elif form.register.is_submitted() and form.register.submit.data:
+        password_hashed = generate_password_hash(form.register.password.data)
         query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
-         form.register.last_name.data, form.register.password.data))
+         form.register.last_name.data, password_hashed))
         return redirect(url_for('index'))
     return render_template('index.html', title='Welcome', form=form)
 
