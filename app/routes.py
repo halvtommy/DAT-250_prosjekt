@@ -1,3 +1,5 @@
+from fileinput import filename
+import logging
 from flask import render_template, flash, redirect, url_for, request
 from app import app, query_db
 from app.forms import IndexForm, PostForm, FriendsForm, ProfileForm, CommentsForm
@@ -6,6 +8,8 @@ import os
 
 # this file contains all the different routes, and the logic for communicating with the database
 
+# Set up log file
+logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s : %(message)s')
 # home page/login/registration
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -16,10 +20,12 @@ def index():
         user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
         if user == None:
             flash('Sorry, wrong password or username!')
+            app.logger.warning('Failed login attemt with username %s', form.login.username.data)
         elif user['password'] == form.login.password.data:
             return redirect(url_for('stream', username=form.login.username.data))
         else:
             flash('Sorry, wrong password or username!')
+            app.logger.warning('Failed login attemt from %s', form.login.username.data)
 
     elif form.register.is_submitted() and form.register.submit.data:
         query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
