@@ -1,8 +1,10 @@
 import logging
 from flask import render_template, flash, redirect, url_for, request
-from app import app, query_db
-from app.forms import IndexForm, PostForm, FriendsForm, ProfileForm, CommentsForm
+from app import app, query_db, login
+from app.forms import IndexForm, PostForm, FriendsForm, ProfileForm, CommentsForm, LoginForm
 from datetime import datetime
+from config import User
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -11,17 +13,34 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Set up log file
 logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s : %(message)s')
 # home page/login/registration
+@login.user_loader
+def load_user(user_id):
+    user = query_db('SELECT * FROM Users WHERE id="{}";'.format(user_id), one=True)
+    if user is None:
+        return None
+    else:
+        return User(user_id, user[1])
+
+@login.unauthorized_handler
+def unauthorized_callback():
+    flash("Unauthorized")       
+    return redirect(url_for('index'))
+
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     form = IndexForm()
-
+    if current_user.is_authenticated:
+        return redirect(url_for('stream', username=current_user.username))
     if form.login.is_submitted() and form.login.submit.data:
         user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
         if user == None:
             flash('Sorry, wrong password or username!')
             app.logger.warning('Failed login attemt with username %s', form.login.username.data)
         elif check_password_hash(user['password'], form.login.password.data):
+            login_form = LoginForm()
+            Us = load_user(user["id"])
+            login_user(Us, remember=login_form.remember_me.data)
             return redirect(url_for('stream', username=form.login.username.data))
         else:
             flash('Sorry, wrong password or username!')
@@ -34,9 +53,15 @@ def index():
         return redirect(url_for('index'))
     return render_template('index.html', title='Welcome', form=form)
 
+@app.route('/logout')
+def logout():
+    form = IndexForm()
+    logout_user()
+    return redirect(url_for('index'))
 
 # content stream page
 @app.route('/stream/<username>', methods=['GET', 'POST'])
+@login_required
 def stream(username):
     form = PostForm()
     user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
@@ -61,6 +86,7 @@ def stream(username):
 
 # comment page for a given post and user.
 @app.route('/comments/<username>/<int:p_id>', methods=['GET', 'POST'])
+@login_required
 def comments(username, p_id):
     form = CommentsForm()
     if form.is_submitted():
@@ -73,6 +99,7 @@ def comments(username, p_id):
 
 # page for seeing and adding friends
 @app.route('/friends/<username>', methods=['GET', 'POST'])
+@login_required
 def friends(username):
     form = FriendsForm()
     user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
@@ -88,6 +115,7 @@ def friends(username):
 
 # see and edit detailed profile information of a user
 @app.route('/profile/<username>', methods=['GET', 'POST'])
+@login_required
 def profile(username):
     form = ProfileForm()
     if form.is_submitted():
