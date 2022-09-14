@@ -35,22 +35,26 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('stream', username=current_user.username))
     if form.login.is_submitted() and form.login.submit.data:
-        user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
-        if user == None:
-            flash('Sorry, wrong password or username!')
-            app.logger.warning('Failed login attemt with username %s', form.login.username.data)
-        elif check_password_hash(user['password'], form.login.password.data):
-            login_form = LoginForm()
-            Us = load_user(user["id"])
-            login_user(Us, remember=login_form.remember_me.data)
-            return redirect(url_for('stream', username=form.login.username.data))
+        captcha_login_response = request.form['g-recaptcha-response']
+        if len(captcha_login_response) > 1:
+            user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
+            if user == None:
+                flash('Sorry, wrong password or username!')
+                app.logger.warning('Failed login attemt with username %s', form.login.username.data)
+            elif check_password_hash(user['password'], form.login.password.data):
+                login_form = LoginForm()
+                Us = load_user(user["id"])
+                login_user(Us, remember=login_form.remember_me.data)
+                return redirect(url_for('stream', username=form.login.username.data))
+            else:
+                flash('Sorry, wrong password or username!')
+                app.logger.warning('Failed login attemt from %s', form.login.username.data)
         else:
-            flash('Sorry, wrong password or username!')
-            app.logger.warning('Failed login attemt from %s', form.login.username.data)
+            flash("Please confirm that you are not a robot")
 
     elif form.register.is_submitted() and form.register.submit.data:
-        captcha_response = request.form['g-recaptcha-response']
-        if len(captcha_response) > 1:
+        captcha_reg_response = request.form['g-recaptcha-response']
+        if len(captcha_reg_response) > 1:
             password_hashed = generate_password_hash(form.register.password.data)
             query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
             form.register.last_name.data, password_hashed))
