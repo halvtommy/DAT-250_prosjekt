@@ -9,6 +9,8 @@ import os
 app = Flask(__name__)
 Bootstrap(app)
 app.config.from_object(Config)
+app.config["RECAPTCHA_PUBLIC_KEY"] = "6Leah_khAAAAAHx_biFobCvvrPB1ciHsBxSsr6IU"
+app.config["RECAPTCHA_PRIVATE_KEY"] = "6Leah_khAAAAAIbvbtdn97A73EL6qqI5PjGTUDna"
 
 # TODO: Handle login management better, maybe with flask_login?
 login = LoginManager(app)

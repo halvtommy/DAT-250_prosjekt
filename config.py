@@ -9,6 +9,8 @@ class Config(object):
     DATABASE = 'database.db'
     UPLOAD_PATH = 'app/static/uploads'
     ALLOWED_EXTENSIONS = {".jpg", ".png"} # Might use this at some point, probably don't want people to upload any file type
+    #RECAPTCHA_PUBLIC_KEY = '6Leah_khAAAAAHx_biFobCvvrPB1ciHsBxSsr6IU'
+    #RECAPTCHA_PRIVATE_KEY = '6Leah_khAAAAAIbvbtdn97A73EL6qqI5PjGTUDna'
 
 class User(UserMixin):
     def __init__(self, id, username) -> None:

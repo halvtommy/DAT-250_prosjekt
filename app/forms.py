@@ -1,7 +1,7 @@
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, FormField, TextAreaField, FileField
 from wtforms.fields.html5 import DateField
-from wtforms.validators import InputRequired, Length, DataRequired
+from wtforms.validators import InputRequired, Length
 
 # defines all forms in the application, these will be instantiated by the template,
 # and the routes.py will read the values of the fields
@@ -13,6 +13,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', render_kw={'placeholder': 'Password'})
     remember_me = BooleanField('Remember me') # TODO: It would be nice to have this feature implemented, probably by using cookies
     submit = SubmitField('Sign In')
+    recaptcha = RecaptchaField()
 
 class RegisterForm(FlaskForm):
     first_name = StringField('First Name', render_kw={'placeholder': 'First Name'})
@@ -21,6 +22,8 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', render_kw={'placeholder': 'Password'})
     confirm_password = PasswordField('Confirm Password', render_kw={'placeholder': 'Confirm Password'})
     submit = SubmitField('Sign Up')
+    recaptcha = RecaptchaField()
+    
 
 class IndexForm(FlaskForm):
     login = FormField(LoginForm)
