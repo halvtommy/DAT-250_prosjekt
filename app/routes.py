@@ -40,9 +40,9 @@ def index():
 def stream(username):
     form = PostForm()
     user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
-    if form.is_submitted():
+    if form.validate_on_submit():
         file = os.path.splitext(form.image.data.filename)
-        type = file[1]
+        type = file[1] 
         if type in app.config["ALLOWED_EXTENSIONS"]:
             path = os.path.join(app.config['UPLOAD_PATH'], form.image.data.filename)
             form.image.data.save(path)
