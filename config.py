@@ -16,8 +16,11 @@ class User(UserMixin):
         self.username = username
         self.authenticated = False
 
+    def get_username(self):
+        return self.username
+
     def is_active(self):
-            return self.is_active()
+        return self.is_active()
 
     def is_anonymous(self):
          return False
