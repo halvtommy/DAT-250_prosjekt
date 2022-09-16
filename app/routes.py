@@ -52,7 +52,7 @@ def index():
         else:
             flash("Please confirm that you are not a robot")
 
-    elif form.register.is_submitted() and form.register.submit.data:
+    elif form.register.validate_on_submit() and form.register.submit.data:
         captcha_reg_response = request.form['g-recaptcha-response']
         if len(captcha_reg_response) > 1:
             password_hashed = generate_password_hash(form.register.password.data)
