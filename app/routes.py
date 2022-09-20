@@ -78,7 +78,7 @@ def stream(username):
     else:
         form = PostForm()
         user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
-        if form.is_submitted():
+        if form.validate_on_submit():
             file = os.path.splitext(form.image.data.filename)
             type = file[1]
             if type in app.config["ALLOWED_EXTENSIONS"]:
