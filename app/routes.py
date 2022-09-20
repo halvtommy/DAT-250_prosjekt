@@ -34,7 +34,7 @@ def index():
     form = IndexForm()
     if current_user.is_authenticated:
         return redirect(url_for('stream', username=current_user.username))
-    if form.login.is_submitted() and form.login.submit.data:
+    if form.login.validate_on_submit() and form.login.submit.data:
         captcha_login_response = request.form['g-recaptcha-response']
         if len(captcha_login_response) > 1:
             user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
@@ -103,7 +103,7 @@ def comments(username, p_id):
         return redirect(url_for('comments', username=current_user.get_username(), p_id = p_id))
     else:
         form = CommentsForm()
-        if form.is_submitted():
+        if form.validate_on_submit():
             user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
             query_db('INSERT INTO Comments (p_id, u_id, comment, creation_time) VALUES({}, {}, "{}", \'{}\');'.format(p_id, user['id'], form.comment.data, datetime.now()))
 
@@ -120,7 +120,7 @@ def friends(username):
     else:
         form = FriendsForm()
         user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
-        if form.is_submitted():
+        if form.validate_on_submit():
             friend = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.username.data), one=True)
             if friend is None:
                 flash('User does not exist')
@@ -136,7 +136,7 @@ def friends(username):
 def profile(username):
     form = ProfileForm()
     if username == current_user.get_username():
-        if form.is_submitted():
+        if form.validate_on_submit():
             query_db('UPDATE Users SET education="{}", employment="{}", music="{}", movie="{}", nationality="{}", birthday=\'{}\' WHERE username="{}" ;'.format(
                 form.education.data, form.employment.data, form.music.data, form.movie.data, form.nationality.data, form.birthday.data, username
             ))
