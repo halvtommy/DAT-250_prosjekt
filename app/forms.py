@@ -1,5 +1,5 @@
 from wsgiref.validate import validator
-from flask_wtf import FlaskForm, RecaptchaField
+from flask_wtf import FlaskForm, RecaptchaField, csrf
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, FormField, TextAreaField, FileField
 from wtforms.fields.html5 import DateField
 from wtforms.validators import InputRequired, Length, Regexp, EqualTo, DataRequired, Optional
@@ -45,14 +45,16 @@ class IndexForm(FlaskForm):
     register = FormField(RegisterForm)
 
 class PostForm(FlaskForm):
-    content = TextAreaField('New Post', validators=[Length(min=10, max=300, message="At least 10 characters, maximum 300")], render_kw={'placeholder': 'What are you thinking about?'})
+    content = TextAreaField('New Post', 
+        validators=[Length(min=10, max=300, message="At least 10 characters, maximum 300")], 
+        render_kw={'placeholder': 'What are you thinking about?'})
     image = FileField('Image')
     submit = SubmitField('Post')
 
 class CommentsForm(FlaskForm):
     comment = TextAreaField('New Comment', 
         validators=[
-            Length(min=1, max=100, message="Comments must cannot be longer than 100 characters, or less than 1 character")],
+            Length(min=1, max=100, message="Comments cannot be longer than 100 characters, or less than 1 character")],
         render_kw={'placeholder': 'What do you have to say?'})
     submit = SubmitField('Comment')
 
@@ -68,27 +70,27 @@ class ProfileForm(FlaskForm):
     education = StringField('Education', 
         validators=[
             Length(max=30, message="Must be less than 30 letters"),
-            Regexp('^\w*$', message="Can only contain letters, numbers and underscore")],
+            Regexp('^[a-zA-Z0-9 ]*$', message="Can only contain letters, numbers, underscore and space")],
         render_kw={'placeholder': 'Highest education'})
     employment = StringField('Employment', 
         validators=[
             Length(max=30, message="Must be less than 30 letters"),
-            Regexp('^\w*$', message="Can only contain letters, numbers and underscore")],
+            Regexp('^[a-zA-Z0-9 ]*$', message="Can only contain letters, numbers, underscore and space")],
         render_kw={'placeholder': 'Current employment'})
     music = StringField('Favorite song', 
         validators=[
             Length(max=30, message="Must be less than 30 letters"),
-            Regexp('^\w*$', message="Can only contain letters, numbers and underscore")],
+            Regexp('^[a-zA-Z0-9 ]*$', message="Can only contain letters, numbers, underscore and space")],
         render_kw={'placeholder': 'Favorite song'})
     movie = StringField('Favorite movie', 
         validators=[
             Length(max=30, message="Must be less than 30 letters"),
-            Regexp('^\w*$', message="Can only contain letters, numbers and underscore")],
+            Regexp('^[a-zA-Z0-9 ]*$', message="Can only contain letters, numbers, underscore and space")],
         render_kw={'placeholder': 'Favorite movie'})
     nationality = StringField('Nationality', 
         validators=[
             Length(max=30, message="Must be less than 30 letters"),
-            Regexp('^\w*$', message="Can only contain letters, numbers and underscore")],
+            Regexp('^[a-zA-Z0-9 ]*$', message="Can only contain letters, numbers, underscore and space")],
         render_kw={'placeholder': 'Your nationality'})
     birthday = DateField('Birthday',
         validators=[Optional()])

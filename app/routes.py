@@ -34,7 +34,7 @@ def index():
     form = IndexForm()
     if current_user.is_authenticated:
         return redirect(url_for('stream', username=current_user.username))
-    if form.login.validate_on_submit() and form.login.submit.data:
+    if form.login.is_submitted() and form.login.submit.data:
         captcha_login_response = request.form['g-recaptcha-response']
         if len(captcha_login_response) > 1:
             user = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.login.username.data), one=True)
@@ -51,10 +51,15 @@ def index():
                 app.logger.warning('Failed login attemt from %s', form.login.username.data)
         else:
             flash("Please confirm that you are not a robot")
-
     elif form.register.validate_on_submit() and form.register.submit.data:
+        app.logger.info(form.register.validate_on_submit())
+        app.logger.info(form.register.data)
+        app.logger.info(form.register.csrf_token)
+        app.logger.info(form.login.data)
+        app.logger.info(form.login.csrf_token)
         captcha_reg_response = request.form['g-recaptcha-response']
         if len(captcha_reg_response) > 1:
+            app.logger.info("user added to db")
             password_hashed = generate_password_hash(form.register.password.data)
             query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
             form.register.last_name.data, password_hashed))
