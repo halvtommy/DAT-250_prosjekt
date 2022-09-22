@@ -52,20 +52,20 @@ def index():
         else:
             flash("Please confirm that you are not a robot")
     elif form.register.validate_on_submit() and form.register.submit.data:
-        app.logger.info(form.register.validate_on_submit())
-        app.logger.info(form.register.data)
-        app.logger.info(form.register.csrf_token)
-        app.logger.info(form.login.data)
-        app.logger.info(form.login.csrf_token)
-        captcha_reg_response = request.form['g-recaptcha-response']
-        if len(captcha_reg_response) > 1:
-            app.logger.info("user added to db")
-            password_hashed = generate_password_hash(form.register.password.data)
-            query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
-            form.register.last_name.data, password_hashed))
-            return redirect(url_for('index'))
+        users = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.register.username.data), one=True)
+        app.logger.info(users)
+        if users != None:
+            flash("User already exsists")
         else:
-            flash("Please confirm that you are not a robot")
+            captcha_reg_response = request.form['g-recaptcha-response']
+            if len(captcha_reg_response) > 1:
+                app.logger.info("user added to db")
+                password_hashed = generate_password_hash(form.register.password.data)
+                query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
+                form.register.last_name.data, password_hashed))
+                return redirect(url_for('index'))
+            else:
+                flash("Please confirm that you are not a robot")
     return render_template('index.html', title='Welcome', form=form)
 
 @app.route('/logout')
