@@ -4,6 +4,7 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
 import sqlite3
 import os
+from flask_wtf.csrf import CSRFProtect
 
 # create and configure app
 app = Flask(__name__)
@@ -15,7 +16,8 @@ app.config["RECAPTCHA_PRIVATE_KEY"] = "6Leah_khAAAAAIbvbtdn97A73EL6qqI5PjGTUDna"
 # TODO: Handle login management better, maybe with flask_login?
 login = LoginManager(app)
 login.login_view = "login"
-
+csrf = CSRFProtect(app)
+csrf.init_app(app)
 # get an instance of the db
 def get_db():
     db = getattr(g, '_database', None)

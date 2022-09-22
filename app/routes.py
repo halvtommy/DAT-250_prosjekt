@@ -51,16 +51,21 @@ def index():
                 app.logger.warning('Failed login attemt from %s', form.login.username.data)
         else:
             flash("Please confirm that you are not a robot")
-
     elif form.register.validate_on_submit() and form.register.submit.data:
-        captcha_reg_response = request.form['g-recaptcha-response']
-        if len(captcha_reg_response) > 1:
-            password_hashed = generate_password_hash(form.register.password.data)
-            query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
-            form.register.last_name.data, password_hashed))
-            return redirect(url_for('index'))
+        users = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.register.username.data), one=True)
+        app.logger.info(users)
+        if users != None:
+            flash("User already exsists")
         else:
-            flash("Please confirm that you are not a robot")
+            captcha_reg_response = request.form['g-recaptcha-response']
+            if len(captcha_reg_response) > 1:
+                app.logger.info("user added to db")
+                password_hashed = generate_password_hash(form.register.password.data)
+                query_db('INSERT INTO Users (username, first_name, last_name, password) VALUES("{}", "{}", "{}", "{}");'.format(form.register.username.data, form.register.first_name.data,
+                form.register.last_name.data, password_hashed))
+                return redirect(url_for('index'))
+            else:
+                flash("Please confirm that you are not a robot")
     return render_template('index.html', title='Welcome', form=form)
 
 @app.route('/logout')
@@ -103,7 +108,7 @@ def comments(username, p_id):
         return redirect(url_for('comments', username=current_user.get_username(), p_id = p_id))
     else:
         form = CommentsForm()
-        if form.is_submitted():
+        if form.validate_on_submit():
             user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
             query_db('INSERT INTO Comments (p_id, u_id, comment, creation_time) VALUES({}, {}, "{}", \'{}\');'.format(p_id, user['id'], form.comment.data, datetime.now()))
 
@@ -120,7 +125,7 @@ def friends(username):
     else:
         form = FriendsForm()
         user = query_db('SELECT * FROM Users WHERE username="{}";'.format(username), one=True)
-        if form.is_submitted():
+        if form.validate_on_submit():
             friend = query_db('SELECT * FROM Users WHERE username="{}";'.format(form.username.data), one=True)
             if friend is None:
                 flash('User does not exist')
@@ -136,7 +141,7 @@ def friends(username):
 def profile(username):
     form = ProfileForm()
     if username == current_user.get_username():
-        if form.is_submitted():
+        if form.validate_on_submit():
             query_db('UPDATE Users SET education="{}", employment="{}", music="{}", movie="{}", nationality="{}", birthday=\'{}\' WHERE username="{}" ;'.format(
                 form.education.data, form.employment.data, form.music.data, form.movie.data, form.nationality.data, form.birthday.data, username
             ))
